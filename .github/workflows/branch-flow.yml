@@ -1,0 +1,32 @@
+name: Branch Flow
+
+on:
+  pull_request:
+    branches:
+      - main
+      - qa
+
+jobs:
+  validate-branch-flow:
+    name: Validate branch flow
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate source branch
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
+          BASE_BRANCH: ${{ github.base_ref }}
+        run: |
+          echo "Pull Request: $HEAD_BRANCH -> $BASE_BRANCH"
+
+          if [[ "$BASE_BRANCH" == "main" && "$HEAD_BRANCH" != "qa" ]]; then
+            echo "ERROR: Only 'qa' can be merged into 'main'."
+            exit 1
+          fi
+
+          if [[ "$BASE_BRANCH" == "qa" && "$HEAD_BRANCH" != "dev" ]]; then
+            echo "ERROR: Only 'dev' can be merged into 'qa'."
+            exit 1
+          fi
+
+          echo "Branch flow is valid."
