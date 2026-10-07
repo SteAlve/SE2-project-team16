@@ -24,9 +24,71 @@ jobs:
             exit 1
           fi
 
-          if [[ "$BASE_BRANCH" == "qa" && "$HEAD_BRANCH" != "dev" ]]; then
-            echo "ERROR: Only 'dev' can be merged into 'qa'."
-            exit 1
+          if [[ "$BASE_BRANCH" == "qa" ]]; then
+            case "$HEAD_BRANCH" in
+              dev | fix/* | test/*) ;;
+              *)
+                echo "ERROR: Only 'dev' (a new batch) or 'fix/*' and 'test/*' branches"
+                echo "(changes to the batch already in qa) can be merged into 'qa'."
+                exit 1
+                ;;
+            esac
           fi
 
           echo "Branch flow is valid."
+
+  # qa tests one batch at a time: a new dev -> qa PR waits until the batch already in qa
+  # has been promoted to main. Otherwise untested work from dev would mix with it.
+  # fix/* and test/* PRs are not held back: they stabilize that batch, so they must be able
+  # to reach qa while it is still there.
+  qa-promotion-gate:
+    name: Qa is promoted to main
+    if: github.base_ref == 'qa' && github.head_ref == 'dev'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check that qa has no commits missing from main
+        run: |
+          pending=$(git rev-list --count origin/main..origin/qa)
+
+          if [ "$pending" -ne 0 ]; then
+            echo "ERROR: qa has $pending commit(s) that are not in main yet."
+            echo "Test qa and promote it to main before opening a new dev -> qa PR."
+            git log --oneline --no-merges origin/main..origin/qa
+            exit 1
+          fi
+
+          echo "qa is fully promoted to main."
+
+  # Fixes made on qa (fix/* and test/* branches) must be back-merged into dev before the next
+  # batch moves. Otherwise dev -> qa could undo them or conflict with them. Merge commits are
+  # ignored: every dev -> qa PR creates one on qa, and dev never needs it.
+  dev-has-qa-fixes:
+    name: Dev has everything from qa
+    if: github.base_ref == 'qa' && github.head_ref == 'dev'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check that dev contains every commit made on qa
+        run: |
+          missing=$(git rev-list --count --no-merges origin/dev..origin/qa)
+
+          if [ "$missing" -ne 0 ]; then
+            echo "ERROR: qa has $missing commit(s) that dev does not have yet (fixes made on qa)."
+            echo "Back-merge qa into dev first: open a PR from qa into dev and merge it"
+            echo "with 'Create a merge commit' (not squash, not rebase)."
+            git log --oneline --no-merges origin/dev..origin/qa
+            exit 1
+          fi
+
+          echo "dev contains everything that was made on qa."

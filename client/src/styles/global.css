@@ -1,0 +1,15 @@
+/*
+ * GLOBAL STYLES - only what every screen shares: the reset, the base font, shared colors and
+ * sizes (as CSS variables). The styles of a single component live next to it, in a CSS Module
+ * (see components/example.module.css).
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}

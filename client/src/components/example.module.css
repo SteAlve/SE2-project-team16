@@ -1,0 +1,20 @@
+/*
+ * THIS IS JUST AN EXAMPLE. DO NOT COPY IT.
+ *
+ * The styles of a component live next to it, in a CSS Module (name.module.css). Class names are
+ * local to the file, so two components can both have a ".card" without clashing. Rules shared by
+ * every screen go in styles/global.css instead.
+ */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-height: 5rem;
+  padding: 1rem 1.5rem;
+  font-size: 1.25rem; /* big, the kiosk is used by touch */
+  cursor: pointer;
+}
+
+.tag {
+  font-weight: 700;
+}
