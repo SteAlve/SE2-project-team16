@@ -22,7 +22,10 @@ At least **one approval** is required before merging.
 
 Used for testing, integration, and code review before changes reach `main`.
 
-Changes should reach `qa` through a Pull Request from `dev`.
+`qa` tests **one batch at a time**. Changes reach `qa` in two ways:
+
+- **A new batch** comes through a Pull Request from `dev`. It can be opened only when everything already in `qa` has been promoted to `main` (the **Qa is promoted to main** check enforces it).
+- **A change to the batch already in `qa`** (a bug, a missing test) comes through a Pull Request from a `fix/*` or `test/*` branch created from `qa`. See [Testing](#testing).
 
 ### `dev`
 
@@ -75,7 +78,7 @@ git push -u origin feature/feature-name
 feature/* → dev
 ```
 
-6. When the development version is ready for testing:
+6. When the development version is ready for testing, and `qa` has no batch waiting for `main`:
 
 ```text
 dev → qa
@@ -86,6 +89,28 @@ dev → qa
 ```text
 qa → main
 ```
+
+## Testing
+
+Where a test is written depends on what it covers.
+
+**A new feature.** Write the tests together with the code, in the same feature branch and Pull Request into `dev`.
+
+**The batch already in `qa`.** If testing finds a bug or a missing test, the change is made in `qa`, not in `dev`:
+
+1. Create a branch **from `qa`**, named `fix/...` or `test/...`:
+
+```bash
+git checkout qa
+git pull origin qa
+git checkout -b fix/short-description
+```
+
+2. Open a Pull Request **into `qa`** and merge it.
+3. Open a Pull Request from `qa` into `dev` (back-merge), so that `dev` receives the same change.
+4. When `qa` is verified, promote it: `qa → main`.
+
+Only then the next batch can move on: `dev → qa`.
 
 ## Branch Protection
 
