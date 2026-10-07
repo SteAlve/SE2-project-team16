@@ -2,7 +2,8 @@
  * DB - opens the SQLite database and gives the other dao files a few helpers to use it.
  *
  * This is the only file that imports the database library. The other dao files only use
- * get, all, run and inTransaction, so if we ever change database, only this file changes.
+ * get, all and run; inTransaction is for the use cases, which get it from app.js. So if we
+ * ever change database, only this file changes.
  *
  * The data is saved in server/office-queue.db, created the first time the server starts.
  * Delete that file to start from scratch.
@@ -32,4 +33,6 @@ export const all = (sql, params = {}) => db.prepare(sql).all(params); // all row
 export const run = (sql, params = {}) => db.prepare(sql).run(params); // for INSERT, UPDATE, DELETE
 
 // Runs fn so that either all its changes are saved, or none if it throws. fn can't be async.
-export const inTransaction = (fn) => db.transaction(fn)();
+// It takes the write lock right away (BEGIN IMMEDIATE), so a read followed by a write, like
+// "call next", can't be overtaken by another connection in between.
+export const inTransaction = (fn) => db.transaction(fn).immediate();
