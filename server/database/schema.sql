@@ -1,6 +1,13 @@
 -- SQLite database schema for the office-queue server.
 -- Foreign-key enforcement must be enabled by the connection (PRAGMA foreign_keys = ON).
 
+CREATE TABLE IF NOT EXISTS "user" (
+  id INTEGER PRIMARY KEY,
+  username TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('OFFICER', 'MANAGER', 'ADMIN'))
+);
+
 CREATE TABLE IF NOT EXISTS counter (
   number INTEGER UNIQUE
 );

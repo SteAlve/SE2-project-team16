@@ -1,5 +1,14 @@
 # Data schema
 
+## user
+
+| Column | Type | Constraints |
+| --- | --- | --- |
+| id | INTEGER | PRIMARY KEY |
+| username | TEXT | NOT NULL, UNIQUE |
+| password_hash | TEXT | NOT NULL |
+| role | TEXT | NOT NULL; `OFFICER`, `MANAGER`, or `ADMIN` |
+
 ## counter
 
 | Column | Type | Constraints |
