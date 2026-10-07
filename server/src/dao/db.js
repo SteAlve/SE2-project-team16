@@ -1,25 +1,35 @@
 /**
- * THIS IS JUST A PLACEHOLDER.
- * 
- * DB - the only file that knows which database we use.
- * PLACEHOLDER: implemented with the first story.
+ * DB - opens the SQLite database and gives the other dao files a few helpers to use it.
  *
- * Contains: the basic functions every dao file reuses, for example opening the connection,
- * running queries (get, all, run) and running a function as one all-or-nothing block
- * (inTransaction). Anything needed to set the database up (schema, seed) lives here too.
- * Does not contain: queries about tickets, services, counters or stats (other dao files),
- * business rules, HTTP.
+ * This is the only file that imports the database library. The other dao files only use
+ * get, all, run and inTransaction, so if we ever change database, only this file changes.
  *
- * Why: the other dao files never import the database driver, so changing database means
- * changing this file (plus any SQL dialect differences), not every dao.
- * How it is built is up to whoever implements it.
+ * The data is saved in server/office-queue.db, created the first time the server starts.
+ * Delete that file to start from scratch.
+ * Tests use DB_FILE=:memory: to get an empty database that is never saved.
  */
+import Database from 'better-sqlite3';
+import { fileURLToPath } from 'node:url';
 
-const notImplemented = () => {
-  throw new Error('dao/db.js is a placeholder: implement it with the first story.');
-};
+const file = process.env.DB_FILE ?? fileURLToPath(new URL('../../office-queue.db', import.meta.url));
+const db = new Database(file);
 
-export const get = notImplemented;
-export const all = notImplemented;
-export const run = notImplemented;
-export const inTransaction = notImplemented;
+db.pragma('foreign_keys = ON');
+if (file !== ':memory:') db.pragma('journal_mode = WAL');
+
+// --- tables ---
+//
+// Put the CREATE TABLE statements here, using IF NOT EXISTS so they can run on every start:
+//   db.exec(`CREATE TABLE IF NOT EXISTS ...`);
+
+// --- helpers ---
+//
+// Pass values as an object, never paste them into the SQL string:
+//   get('SELECT * FROM service WHERE id = :id', { id: 2 })
+
+export const get = (sql, params = {}) => db.prepare(sql).get(params); // first row, or undefined
+export const all = (sql, params = {}) => db.prepare(sql).all(params); // all rows, as an array
+export const run = (sql, params = {}) => db.prepare(sql).run(params); // for INSERT, UPDATE, DELETE
+
+// Runs fn so that either all its changes are saved, or none if it throws. fn can't be async.
+export const inTransaction = (fn) => db.transaction(fn)();
