@@ -24,7 +24,7 @@ Used for testing, integration, and code review before changes reach `main`.
 
 `qa` tests **one batch at a time**. Changes reach `qa` in two ways:
 
-- **A new batch** comes through a Pull Request from `dev`. It can be opened only when everything already in `qa` has been promoted to `main` (the **Qa is promoted to main** check enforces it).
+- **A new batch** comes through a Pull Request from `dev`. It can be opened only when everything already in `qa` has been promoted to `main` (the **Qa is promoted to main** check) and `dev` already contains every fix made on `qa` (the **Dev has everything from qa** check).
 - **A change to the batch already in `qa`** (a bug, a missing test) comes through a Pull Request from a `fix/*` or `test/*` branch created from `qa`. See [Testing](#testing).
 
 ### `dev`
@@ -107,7 +107,7 @@ git checkout -b fix/short-description
 ```
 
 2. Open a Pull Request **into `qa`** and merge it.
-3. Open a Pull Request from `qa` into `dev` (back-merge), so that `dev` receives the same change.
+3. Open a Pull Request from `qa` into `dev` (back-merge), so that `dev` receives the same change. Merge it with **Create a merge commit**, not squash or rebase: the **Dev has everything from qa** check recognizes the fix only that way, and it stays red until the back-merge is done.
 4. When `qa` is verified, promote it: `qa → main`.
 
 Only then the next batch can move on: `dev → qa`.
