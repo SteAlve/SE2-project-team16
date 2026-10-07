@@ -54,18 +54,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LoginResponse'
-              examples:
-                officer:
-                  summary: Officer (has a counter)
-                  value:
-                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-                    role: officer
-                    counterId: 3
-                manager:
-                  summary: Manager (no counter)
-                  value:
-                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-                    role: manager
+              example:
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                role: officer
+                counterId: 3
         '400':
           description: Missing or empty fields (`ValidationError`)
           content:
@@ -411,10 +403,10 @@ components:
           type: string
         role:
           type: string
-          enum: [officer, manager, administrator]
+          enum: [officer]
         counterId:
           type: integer
-          description: Counter assigned to the user. Present only when `role` is `officer`.
+          description: Counter assigned to the officer.
 
     Service:
       type: object
