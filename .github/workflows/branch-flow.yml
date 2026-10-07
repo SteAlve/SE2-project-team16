@@ -24,18 +24,26 @@ jobs:
             exit 1
           fi
 
-          if [[ "$BASE_BRANCH" == "qa" && "$HEAD_BRANCH" != "dev" ]]; then
-            echo "ERROR: Only 'dev' can be merged into 'qa'."
-            exit 1
+          if [[ "$BASE_BRANCH" == "qa" ]]; then
+            case "$HEAD_BRANCH" in
+              dev | fix/* | test/*) ;;
+              *)
+                echo "ERROR: Only 'dev' (a new batch) or 'fix/*' and 'test/*' branches"
+                echo "(changes to the batch already in qa) can be merged into 'qa'."
+                exit 1
+                ;;
+            esac
           fi
 
           echo "Branch flow is valid."
 
   # qa tests one batch at a time: a new dev -> qa PR waits until the batch already in qa
   # has been promoted to main. Otherwise untested work from dev would mix with it.
+  # fix/* and test/* PRs are not held back: they stabilize that batch, so they must be able
+  # to reach qa while it is still there.
   qa-promotion-gate:
     name: Qa is promoted to main
-    if: github.base_ref == 'qa'
+    if: github.base_ref == 'qa' && github.head_ref == 'dev'
     runs-on: ubuntu-latest
 
     steps:
