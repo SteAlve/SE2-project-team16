@@ -1,0 +1,48 @@
+# This workflow handles the Continuous Delivery stage
+# of the project.
+#
+# It runs whenever the main branch is updated.
+# Currently, it performs the available validation steps.
+# The actual production deployment will be added once
+# a deployment platform and strategy have been selected.
+
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    # Run the deployment job on a temporary Ubuntu machine
+    # provided by GitHub Actions.
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Download the repository code.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install the Node.js version specified by the project.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      # Install the server dependencies.
+      - name: Install dependencies
+        working-directory: server
+        run: npm ci
+
+      # Check the code with ESLint.
+      - name: Run lint
+        working-directory: server
+        run: npm run lint
+
+      # TODO: Add unit tests once they are implemented.
+      # TODO: Add integration tests once they are implemented.
+      # TODO: Add build step once a production build is available.
+      # TODO: Add production deployment once a deployment platform and deployment strategy have been selected.

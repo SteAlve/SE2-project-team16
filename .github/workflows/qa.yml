@@ -1,0 +1,48 @@
+# QA pipeline
+#
+# This workflow runs whenever the qa branch is updated.
+# It validates the project before it can be considered ready
+# for the production branch.
+
+name: QA
+
+on:
+  push:
+    branches:
+      - qa
+
+jobs:
+  qa:
+    # Run the QA checks on a temporary Ubuntu machine
+    # provided by GitHub Actions.
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Download the repository code.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install the Node.js version specified by the project.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      # Install the server dependencies.
+      - name: Install dependencies
+        working-directory: server
+        run: npm ci
+
+      # Check the code with ESLint.
+      - name: Run lint
+        working-directory: server
+        run: npm run lint
+
+      # TODO: Run unit tests once they are implemented.
+      # TODO: Run integration tests once they are implemented.
+      # TODO: Run E2E tests once they are implemented.
+      # TODO: Build the application once a production build is available.
+      # TODO: Generate the build artifact once the build process is implemented.
+      # TODO: Deploy the application to the QA environment once a deployment platform and strategy have been selected.

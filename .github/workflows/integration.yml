@@ -1,0 +1,44 @@
+# This workflow performs integration checks on the dev branch.
+#
+# It runs whenever the dev branch is updated and verifies
+# that the integrated version of the project passes the
+# available code quality checks.
+
+name: Integration CI
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  integration:
+    # Run the integration checks on a temporary Ubuntu machine.
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Download the current version of the repository.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install the Node.js version specified by the project.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      # Install the server dependencies.
+      - name: Install dependencies
+        working-directory: server
+        run: npm ci
+
+      # Check the integrated code with ESLint.
+      - name: Run lint
+        working-directory: server
+        run: npm run lint
+
+      # TODO: Run unit tests once they are implemented.
+      # TODO: Run integration tests once they are implemented.
+      # TODO: Build the application once a production build is available.
