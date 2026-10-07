@@ -1,7 +1,8 @@
 /**
  * THIS IS JUST AN EXAMPLE. DO NOT COPY IT.
  *
- * PAGES - one screen per route, one for each actor: Kiosk, Officer, Board, Manager, Admin.
+ * PAGES - one screen per route: Kiosk, Officer, Board, Manager, Admin. Each one is used by an
+ * actor on a specific device, and holds the stories that belong together on that screen.
  *
  * Contains: it calls the hooks it needs, puts components on the screen, and decides what to show
  * while loading, on error, and when the data arrives.
