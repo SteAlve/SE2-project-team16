@@ -64,3 +64,31 @@ jobs:
           fi
 
           echo "qa is fully promoted to main."
+
+  # Fixes made on qa (fix/* and test/* branches) must be back-merged into dev before the next
+  # batch moves. Otherwise dev -> qa could undo them or conflict with them. Merge commits are
+  # ignored: every dev -> qa PR creates one on qa, and dev never needs it.
+  dev-has-qa-fixes:
+    name: Dev has everything from qa
+    if: github.base_ref == 'qa' && github.head_ref == 'dev'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check that dev contains every commit made on qa
+        run: |
+          missing=$(git rev-list --count --no-merges origin/dev..origin/qa)
+
+          if [ "$missing" -ne 0 ]; then
+            echo "ERROR: qa has $missing commit(s) that dev does not have yet (fixes made on qa)."
+            echo "Back-merge qa into dev first: open a PR from qa into dev and merge it"
+            echo "with 'Create a merge commit' (not squash, not rebase)."
+            git log --oneline --no-merges origin/dev..origin/qa
+            exit 1
+          fi
+
+          echo "dev contains everything that was made on qa."
