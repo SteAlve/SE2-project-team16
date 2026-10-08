@@ -22,29 +22,52 @@
  *
  * Imports use the final file names, created with the first story.
  */
+
+// general imports
 import express from 'express';
-import * as ticketDao from './dao/tickets.js';
-import * as counterDao from './dao/counters.js';
+
+// clock: the only piece that uses Date, so that the rest of the system can be tested with a fake clock
 import { clock } from './clock.js';
+
+// DAO imports: the concrete pieces that know SQL and the database. They are the only pieces that import
+import { inTransaction } from './dao/db.js';
+
+import * as ticketDao from './dao/tickets.js';
+import * as serviceDao from './dao/services.js';
+
+// use case imports: the pure functions that implement the business rules, plus the errors they can raise
 import { makeIssueTicket } from './usecases/issueTicket.js';
+import { makeListServices } from './usecases/listServices.js';
+
+// controller imports: the HTTP adapters that call the use cases and choose the status code
 import { makeIssueTicketController } from './controllers/tickets.js';
+import { makeListServicesController } from './controllers/services.js';
+
+// router imports: the Express routers that mount the controllers under /api
 import { makeTicketsRouter } from './routes/tickets.js';
+import { makeServicesRouter } from './routes/services.js';
 import { ValidationError, ConflictError, UnprocessableError } from './domain/errors.js';
 
+
 // 2. use cases
-const issueTicket = makeIssueTicket({ tickets: ticketDao, counters: counterDao, clock });
+const issueTicket = makeIssueTicket({ services: serviceDao, tickets: ticketDao, clock, inTransaction });
+const listServices = makeListServices({ services: serviceDao });
 
 // 3. controllers
 const issueTicketController = makeIssueTicketController({ issueTicket });
+const listServicesController = makeListServicesController({ listServices });
 
 // 4. routers
 export const app = express();
 app.use(express.json());
-app.use('/api', makeTicketsRouter({ issueTicketController }));
+app.use('/api', makeServicesRouter({ listServicesController }), 
+                makeTicketsRouter({ issueTicketController }));
 
 // 5. errors
+const isBadJson = (err) => err.type === 'entity.parse.failed';
+
 const statusOf = (err) => {
-  if (err instanceof ValidationError) return 400;
+  if (err instanceof ValidationError || isBadJson(err)) return 400;
   if (err instanceof ConflictError) return 409;
   if (err instanceof UnprocessableError) return 422;
   return 500;
@@ -52,5 +75,12 @@ const statusOf = (err) => {
 
 app.use((err, _req, res, _next) => {
   const status = statusOf(err);
-  res.status(status).json({ error: status === 500 ? 'Internal error' : err.message });
+  if (status === 500) {
+    console.error(err);
+    return res.status(500).json({ error: 'InternalServerError', message: 'Unexpected error' });
+  }
+  if (isBadJson(err)) {
+    return res.status(400).json({ error: 'ValidationError', message: 'Request body must be valid JSON' });
+  }
+  res.status(status).json({ error: err.name, message: err.message });
 });
