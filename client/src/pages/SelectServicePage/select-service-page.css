@@ -1,0 +1,45 @@
+.service-title{
+    font-size: var(--font-size-xxl);
+    font-weight: 700;
+    
+}
+
+.service-title-container{
+    position: absolute;
+    top: 200px;
+    width: 688px;
+    height: 232px;
+
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+
+.service-description{
+    font-size: var(--font-size-md);
+    font-weight: 500;
+    color: var(--color-text-opacity-60);
+}
+
+.service-description-container{
+    position: absolute;
+    top: 468px;
+    width: 642px;
+    height: 48px;
+
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.service-grid-container {
+    position: absolute;
+    top: 640px;
+
+    width: 100%;
+    height: 1160px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+}

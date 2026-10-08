@@ -18,6 +18,24 @@
  *     </Routes>
  *   </BrowserRouter>
  */
-export default function App() {
-  return <h1>Office Queue</h1>;
+
+import SelectServicePage from './pages/SelectServicePage/SelectServicePage'
+import ShowTicketPage from './pages/ShowTicketPage/ShowTicketPage'
+import { Routes, Route, BrowserRouter } from "react-router-dom"
+
+function App() {
+
+  // Enable client-side navigation through React Router
+  return (
+    <>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/select-service" element={<SelectServicePage />} />
+          <Route path="/show-ticket" element={<ShowTicketPage />} />
+        </Routes>
+      </BrowserRouter>
+    </>
+  );
 }
+
+export default App

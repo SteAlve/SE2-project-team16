@@ -1,0 +1,55 @@
+/*
+ * GLOBAL STYLES - only what every screen shares: the reset, the base font, shared colors and
+ * sizes (as CSS variables). The styles of a single component live next to it, in a CSS Module
+ * (see components/example.module.css).
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+html, body{
+  overscroll-behavior: none; /* Prevents browser overscroll behavior when the user reaches the top or bottom of the page. */
+}
+
+:root {
+  --color-background: #F8F9FA;
+  --color-primary: #2563EB;
+  --color-text: #1F2937;
+  --color-text-opacity-60: rgb(31 41 55 / 60%);
+  --color-primary-opacity-40: rgb(37 99 235 / 40%);
+  --color-card: #FFFFFF;
+  --color-light-grey: #F1F5F9;
+  --font-primary: 'Inter', sans-serif;
+
+  --font-size-sm: 24px;
+  --font-size-md: 40px;
+  --font-size-lg: 48px;
+  --font-size-xxl: 96px;
+}
+
+/* 
+ * Define the fixed dimensions of the screen.
+ * The counter interface is designed specifically for a 1080x1920 px display, so these dimensions ensure that the layout matches the target screen size.
+ */
+.counter-screen {
+  width: 1080px;
+  height: 1920px;
+  position: relative;
+}
+
+.app-container {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-primary);
+}
+
+
+
+
+
