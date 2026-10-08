@@ -1,26 +1,15 @@
 /**
- * THIS IS JUST AN EXAMPLE. DO NOT COPY IT AND CHECK IT.
- * 
  * APP - the composition root: the only file that knows every other piece.
- * PLACEHOLDER with the wiring of story 1: extend it as the stories arrive.
  *
  * What it does, in this order
  *  1. Picks the concrete pieces: dao modules, clock, transaction helper.
  *  2. Builds the use cases, handing them those pieces (dependency injection).
  *  3. Builds the controllers, handing them the use cases.
  *  4. Builds the routers, handing them the controllers, and mounts them under /api.
- *  5. Adds the error middleware: domain errors -> 400 / 409 / 422, anything else -> 500.
+ *  5. Adds the error middleware: domain errors -> 400 / 409 / 422, or other specific errors code, everything else -> 500.
  *
- * Why here: every other layer receives what it needs as parameters, so none of them imports a
- * layer outside of it (ESLint enforces it). Joining the real pieces together is this file's job only.
- * Tests can build the same chain with fake objects instead of the dao modules.
- *
- * It exports `app` without calling listen(): index.js starts the server, so Supertest can use
- * `app` without opening a port.
  * Does not contain: business rules, SQL, request handling. If it grows beyond wiring,
  * something is in the wrong place.
- *
- * Imports use the final file names, created with the first story.
  */
 
 // general imports
