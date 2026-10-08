@@ -164,10 +164,15 @@ paths:
                 $ref: '#/components/schemas/Error'
               examples:
                 bodyMissing:
-                  summary: Body missing or not JSON
+                  summary: Body missing
                   value:
                     error: ValidationError
                     message: Request body is required
+                bodyNotJson:
+                  summary: Body is not valid JSON
+                  value:
+                    error: ValidationError
+                    message: Request body must be valid JSON
                 serviceIdMissing:
                   summary: serviceId missing
                   value:
@@ -179,22 +184,14 @@ paths:
                     error: ValidationError
                     message: serviceId must be a positive integer
         '409':
-          description: The ticket cannot be issued
+          description: 999 tickets already issued today for this service (`DailyLimitReachedError`)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-              examples:
-                dailyLimit:
-                  summary: 999 tickets already issued today for this service
-                  value:
-                    error: DailyLimitReachedError
-                    message: No more tickets available today for service 2
-                conflict:
-                  summary: Number collision on the UNIQUE constraint (unlikely, retry)
-                  value:
-                    error: TicketConflictError
-                    message: Ticket already assigned, please retry
+              example:
+                error: DailyLimitReachedError
+                message: No more tickets available today for service 2
         '422':
           description: The service does not exist (`ServiceNotFoundError`)
           content:
