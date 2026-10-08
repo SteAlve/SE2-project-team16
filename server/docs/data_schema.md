@@ -8,12 +8,13 @@
 | username | TEXT | NOT NULL, UNIQUE |
 | password_hash | TEXT | NOT NULL |
 | role | TEXT | NOT NULL; `OFFICER`, `MANAGER`, or `ADMIN` |
+| counter_number | INTEGER | NULL; references `counter(number)` and can be set only for an `OFFICER` |
 
 ## counter
 
 | Column | Type | Constraints |
 | --- | --- | --- |
-| number | INTEGER | UNIQUE |
+| number | INTEGER | PRIMARY KEY |
 
 ## service
 
@@ -21,6 +22,7 @@
 | --- | --- | --- |
 | id | INTEGER | PRIMARY KEY |
 | tag | TEXT | NOT NULL, UNIQUE |
+| prefix | TEXT | NOT NULL, UNIQUE, exactly one character; used in ticket codes such as `A-001` |
 | service_time | INTEGER | NOT NULL, greater than 0 |
 
 ## counter_service
@@ -42,6 +44,7 @@ The pair `(counter_number, service_id)` is the primary key.
 | day | TEXT | NOT NULL; business day in `YYYY-MM-DD` format |
 | number | INTEGER | NOT NULL, greater than 0 |
 | service_id | INTEGER | NOT NULL, references `service(id)` |
+| counter_number | INTEGER | NULL until called; together with `service_id`, references `counter_service` |
 | status | TEXT | NOT NULL; `WAITING`, `SERVING`, `COMPLETED`, or `CANCELLED` |
 
-The pair `(day, number)` is unique, so ticket numbers start over each business day.
+The triple `(day, number, service_id)` is unique, so each service starts its numbering at `1` each business day. A counter can have at most one `SERVING` ticket, and it can serve only a service assigned to it.
