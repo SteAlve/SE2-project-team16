@@ -1,0 +1,460 @@
+openapi: 3.0.3
+
+info:
+  title: Office Queue Management API
+  version: 0.1.0
+  description: |
+    REST API of the Office Queue Management System (SE2 - Team 16).
+
+    **Conventions**
+    - All routes are mounted under `/api`.
+    - Ticket codes look like `P-001`: service prefix + 3-digit number. The number restarts
+      from 001 every day, for each service (max 999 tickets per service per day).
+      A code identifies a ticket only within the current business day.
+    - A ticket goes through the states `waiting` -> `called` -> `served`.
+    - A counter is free when it has no ticket in state `called` today.
+    - Every error response has the same body: `{ "error": "<ErrorName>", "message": "<text>" }`.
+    - Protected routes require the header `Authorization: Bearer <token>`, obtained with `POST /sessions`.
+      Customers (kiosk) do not authenticate.
+
+servers:
+  - url: http://localhost:3001/api
+    description: Local development
+
+tags:
+  - name: Auth
+    description: User authentication
+  - name: Services
+    description: Service types offered by the office
+  - name: Tickets
+    description: Ticket issue and closing
+  - name: Counters
+    description: Operations performed by an officer at a counter
+
+paths:
+  /sessions:
+    post:
+      tags: [Auth]
+      summary: Log in
+      description: Authenticates a user and returns a bearer token.
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              username: officer3
+              password: s3cret
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              example:
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                role: officer
+                counterId: 3
+        '400':
+          description: Missing or empty fields (`ValidationError`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: ValidationError
+                message: username and password are required
+        '401':
+          description: >-
+            Unknown user or wrong password (`InvalidCredentialsError`).
+            The message is the same in both cases so usernames cannot be discovered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: InvalidCredentialsError
+                message: Invalid username or password
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Auth]
+      summary: Log out
+      description: >-
+        Invalidates the current token. Optional: with stateless tokens (JWT) the client
+        can simply discard the token.
+      operationId: logout
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Logged out
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /services:
+    get:
+      tags: [Services]
+      summary: List the services
+      description: >-
+        Returns the services a customer can choose from. If no service is configured yet,
+        an empty array is returned (this is not an error).
+      operationId: listServices
+      responses:
+        '200':
+          description: List of services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+              example:
+                - id: 1
+                  name: Shipping
+                  prefix: S
+                - id: 2
+                  name: Bill payment
+                  prefix: P
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /tickets:
+    post:
+      tags: [Tickets]
+      summary: Get a ticket
+      description: >-
+        Issues a ticket for the chosen service. The day and the number are decided by the
+        server. Reading the last number and inserting the new ticket happen in a single
+        transaction, so two customers never get the same code.
+      operationId: createTicket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTicketRequest'
+            example:
+              serviceId: 2
+      responses:
+        '201':
+          description: Ticket issued
+          headers:
+            Location:
+              description: URL of the new ticket
+              schema:
+                type: string
+                example: /api/tickets/P-001
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketCode'
+              example:
+                code: P-001
+        '400':
+          description: Invalid request (`ValidationError`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                bodyMissing:
+                  summary: Body missing
+                  value:
+                    error: ValidationError
+                    message: Request body is required
+                bodyNotJson:
+                  summary: Body is not valid JSON
+                  value:
+                    error: ValidationError
+                    message: Request body must be valid JSON
+                serviceIdMissing:
+                  summary: serviceId missing
+                  value:
+                    error: ValidationError
+                    message: serviceId is required
+                serviceIdInvalid:
+                  summary: serviceId is not a positive integer
+                  value:
+                    error: ValidationError
+                    message: serviceId must be a positive integer
+        '409':
+          description: 999 tickets already issued today for this service (`DailyLimitReachedError`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: DailyLimitReachedError
+                message: No more tickets available today for service 2
+        '422':
+          description: The service does not exist (`ServiceNotFoundError`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: ServiceNotFoundError
+                message: Service 99 does not exist
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /tickets/{code}/served:
+    post:
+      tags: [Tickets]
+      summary: Close a ticket (called -> served)
+      description: >-
+        Called by the officer when the customer has been served. The ticket moves from
+        `called` to `served` and the counter becomes available again. The ticket is looked
+        up by `code` among today's tickets. The code is in the path (and not just the
+        counter) so a delayed or duplicated request cannot close the next customer's ticket.
+      operationId: serveTicket
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TicketCodePath'
+      responses:
+        '204':
+          description: Ticket closed, the counter is free
+        '400':
+          description: Invalid ticket code format (`ValidationError`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: ValidationError
+                message: code must match P-001 format
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The user is not an officer, or the ticket was called by another counter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Forbidden
+                message: Ticket P-001 was not called by your counter
+        '409':
+          description: >-
+            The ticket is not in state `called` (still `waiting` or already `served`)
+            (`InvalidTicketStateError`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: InvalidTicketStateError
+                message: Ticket P-001 is not being served (status waiting)
+        '422':
+          description: No ticket with this code exists today (`TicketNotFoundError`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: TicketNotFoundError
+                message: Ticket P-001 does not exist today
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /counters/{counterId}/next-ticket:
+    post:
+      tags: [Counters]
+      summary: Call the next customer
+      description: |
+        The officer is ready: the system selects the next ticket for this counter and marks
+        it as `called`. It changes state (the ticket leaves the queue), so it is a POST and
+        not a GET.
+
+        **Selection rule:** among the queues of the services the counter can handle, take the
+        first ticket of the longest queue. If two or more queues have the same length, take
+        the one whose service has the lowest service time.
+
+        If all those queues are empty nothing happens and `204` is returned: this is a
+        normal situation, not an error.
+
+        Selection and update of the ticket happen in a single transaction, so two counters
+        never get the same ticket.
+      operationId: callNextTicket
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CounterIdPath'
+      responses:
+        '200':
+          description: A ticket has been called
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketCode'
+              example:
+                code: P-001
+        '204':
+          description: All the queues of this counter are empty, nothing to call
+        '400':
+          description: counterId is not a positive integer (`ValidationError`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: ValidationError
+                message: counterId must be a positive integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The user is not an officer, or is not assigned to this counter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Forbidden
+                message: Not allowed to operate counter 3
+        '409':
+          description: The counter is still serving a ticket (`CounterBusyError`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: CounterBusyError
+                message: Counter 3 is still serving P-001
+        '422':
+          description: The counter does not exist (`CounterNotFoundError`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: CounterNotFoundError
+                message: Counter 3 does not exist
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token returned by `POST /sessions`
+
+  parameters:
+    TicketCodePath:
+      name: code
+      in: path
+      required: true
+      description: Ticket code of the current day
+      schema:
+        type: string
+        pattern: '^[A-Z]+-\d{3}$'
+        example: P-001
+    CounterIdPath:
+      name: counterId
+      in: path
+      required: true
+      description: Id of the counter
+      schema:
+        type: integer
+        minimum: 1
+        example: 3
+
+  schemas:
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          description: Name of the error
+          example: ValidationError
+        message:
+          type: string
+          description: Human-readable description
+          example: serviceId is required
+
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+
+    LoginResponse:
+      type: object
+      required: [token, role]
+      properties:
+        token:
+          type: string
+        role:
+          type: string
+          enum: [officer]
+        counterId:
+          type: integer
+          description: Counter assigned to the officer.
+
+    Service:
+      type: object
+      required: [id, name, prefix]
+      properties:
+        id:
+          type: integer
+          example: 2
+        name:
+          type: string
+          example: Bill payment
+        prefix:
+          type: string
+          description: Prefix of the ticket codes of this service. Unique across the office.
+          example: P
+
+    CreateTicketRequest:
+      type: object
+      required: [serviceId]
+      properties:
+        serviceId:
+          type: integer
+          minimum: 1
+          example: 2
+
+    TicketCode:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          pattern: '^[A-Z]+-\d{3}$'
+          description: Service prefix + 3-digit daily number
+          example: P-001
+
+  responses:
+    Unauthorized:
+      description: Missing, expired or invalid token (`Unauthorized`)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Unauthorized
+            message: Authentication required
+    InternalServerError:
+      description: Unexpected error (`InternalServerError`)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: InternalServerError
+            message: Unexpected error
