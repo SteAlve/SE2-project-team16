@@ -310,5 +310,75 @@ describe('database schema', () => {
         status: 'SERVING',
       })).toThrow();
     });
+
+    // Verify that the schema accepts valid non-default statuses; WAITING is covered by the default-status test.
+    it.each(['SERVING', 'COMPLETED', 'CANCELLED'])(
+      'accepts tickets with the valid non-default status %s',
+      (status) => {
+        if (status === 'SERVING' || status === 'COMPLETED') {
+          insertCounter();
+          assignServiceToCounter();
+        }
+
+        expect(() => insertTicket({
+          status,
+          counterNumber: status === 'SERVING' || status === 'COMPLETED'
+            ? 1
+            : null,
+        })).not.toThrow();
+      },
+    );
+
+    // Verify that a ticket can use a counter assigned to its service.
+    it('accepts a ticket assigned to a compatible counter', () => {
+      insertCounter();
+      assignServiceToCounter();
+
+      expect(() => insertTicket({
+        counterNumber: 1,
+        status: 'SERVING',
+      })).not.toThrow();
+    });
+
+    // Verify that different counters can serve tickets simultaneously.
+    it('allows SERVING tickets at different counters', () => {
+      insertCounter(1);
+      insertCounter(2);
+      assignServiceToCounter(1, 1);
+      assignServiceToCounter(2, 1);
+
+      insertTicket({
+        number: 1,
+        counterNumber: 1,
+        status: 'SERVING',
+      });
+
+      expect(() => insertTicket({
+        number: 2,
+        counterNumber: 2,
+        status: 'SERVING',
+      })).not.toThrow();
+    });
+
+    // Verify that ticket numbers can repeat across different services.
+    it('allows the same day and ticket number for different services', () => {
+      insertService({
+        id: 2,
+        tag: 'Payments',
+        prefix: 'P',
+      });
+
+      insertTicket({
+        day: '2026-10-09',
+        number: 1,
+        serviceId: 1,
+      });
+
+      expect(() => insertTicket({
+        day: '2026-10-09',
+        number: 1,
+        serviceId: 2,
+      })).not.toThrow();
+    });
   });
 });
