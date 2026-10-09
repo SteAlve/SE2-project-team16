@@ -20,6 +20,12 @@ describe('counters DTO', () => {
     },
   );
 
+  // Reject missing request bodies for counter creation and assignment.
+  it('rejects missing counter request bodies', () => {
+    expect(() => parseCreateCounter(undefined)).toThrow(ValidationError);
+    expect(() => parseAssignService(undefined)).toThrow(ValidationError);
+  });
+
   // DTO: counters. Validation rule: parseAssignService accepts positive counter and service IDs.
   it('parses valid counter and service IDs, including numeric strings', () => {
     expect(parseAssignService({ counterNumber: '4', serviceId: 2 })).toEqual({

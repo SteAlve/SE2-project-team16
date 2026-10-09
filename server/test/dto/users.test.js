@@ -17,6 +17,21 @@ describe('users DTO', () => {
     });
   });
 
+  // Allow an officer to explicitly have no assigned counter.
+  it('accepts an officer with a null counter number', () => {
+    expect(parseCreateUser({
+      username: 'alice',
+      password: 'secret',
+      role: 'OFFICER',
+      counterNumber: null,
+    })).toEqual({
+      username: 'alice',
+      password: 'secret',
+      role: 'OFFICER',
+      counterNumber: null,
+    });
+  });
+
   // DTO: users. Validation rule: an OFFICER may be assigned a positive integer counter number.
   it('parses an officer with a numeric counter number', () => {
     expect(parseCreateUser({

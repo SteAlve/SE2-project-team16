@@ -16,6 +16,11 @@ describe('services DTO', () => {
     });
   });
 
+  // Reject a missing request body when creating a service.
+  it('rejects a missing service request body', () => {
+    expect(() => parseCreateService(undefined)).toThrow(ValidationError);
+  });
+
   // DTO: services. Validation rule: tag is required and cannot be empty or whitespace.
   it.each([undefined, '', '   '])('rejects a missing or empty tag (%s)', (tag) => {
     expect(() => parseCreateService({ tag, prefix: 'S', serviceTime: 60 }))
