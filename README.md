@@ -107,6 +107,14 @@ node src/index.js
 
 Run `npm.cmd run db:create` again only when setting up a new clone or after deleting the local database file.
 
+To add some sample services and counters, so you can try the app, run this after `db:create`:
+
+```powershell
+npm.cmd run db:seed
+```
+
+On macOS and Linux, use `npm` instead of `npm.cmd`.
+
 ## Testing
 
 Where a test is written depends on what it covers.

@@ -8,6 +8,7 @@
   },
   "scripts": {
     "db:create": "node database/create-db.js",
+    "db:seed": "node database/seed-db.js",
     "lint": "eslint .",
     "test": "vitest run"
   },
