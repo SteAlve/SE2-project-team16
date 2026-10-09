@@ -49,7 +49,16 @@ html, body{
   font-family: var(--font-primary);
 }
 
+/* "Try again" button shown on error states. */
+.try-again-button {
+    width: 476px;
+    height: 112px;
 
+    font-size: var(--font-size-md);
+    font-weight: 700;
 
+    color: var(--color-background);
+    background-color: var(--color-primary);
 
-
+    border-radius: 16px;
+}

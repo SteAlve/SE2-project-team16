@@ -1,11 +1,20 @@
 import Card from "react-bootstrap/Card";
-import { useNavigate } from 'react-router-dom';
 import "./service-card.css";
 
-function ServiceCard({ name, image }) {
-  const navigate = useNavigate();
+function ServiceCard({ name, image, onClick }) {
   return (
-    <Card className="service-card" onClick={() => { navigate('/show-ticket') }}>
+    <Card
+      className="service-card"
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
+    >
       <Card.Body>
         <div className="service-image">
           {image ? (

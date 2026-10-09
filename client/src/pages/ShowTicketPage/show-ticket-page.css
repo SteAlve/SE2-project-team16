@@ -48,3 +48,22 @@
     left: 50%;
     transform: translateX(-50%);
 }
+
+.ticket-status{
+    position: absolute;
+    top: 700px;
+    width: 900px;
+
+    left: 50%;
+    transform: translateX(-50%);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+
+    text-align: center;
+    font-size: var(--font-size-md);
+    font-weight: 500;
+    color: var(--color-text-opacity-60);
+}
