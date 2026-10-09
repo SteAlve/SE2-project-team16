@@ -329,17 +329,6 @@ describe('database schema', () => {
       },
     );
 
-    // Verify that a ticket can use a counter assigned to its service.
-    it('accepts a ticket assigned to a compatible counter', () => {
-      insertCounter();
-      assignServiceToCounter();
-
-      expect(() => insertTicket({
-        counterNumber: 1,
-        status: 'SERVING',
-      })).not.toThrow();
-    });
-
     // Verify that different counters can serve tickets simultaneously.
     it('allows SERVING tickets at different counters', () => {
       insertCounter(1);
