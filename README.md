@@ -90,6 +90,23 @@ dev → qa
 qa → main
 ```
 
+## Local database
+
+From the `server` directory, install dependencies and create the local SQLite database:
+
+```powershell
+npm.cmd install
+npm.cmd run db:create
+```
+
+This creates `server/office-queue.db`. Start the server with:
+
+```powershell
+node src/index.js
+```
+
+Run `npm.cmd run db:create` again only when setting up a new clone or after deleting the local database file.
+
 ## Testing
 
 Where a test is written depends on what it covers.
