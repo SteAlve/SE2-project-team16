@@ -14,7 +14,7 @@ info:
     - A ticket goes through the states `waiting` -> `called` -> `served`.
     - A counter is free when it has no ticket in state `called` today.
     - Every error response has the same body: `{ "error": "<ErrorName>", "message": "<text>" }`.
-    - Protected routes require the header `Authorization: Bearer <token>`, obtained with `POST /sessions`.
+    - Protected routes require the session cookie `sid`, set by `POST /sessions` (`HttpOnly`, `SameSite=Lax`).
       Customers (kiosk) do not authenticate.
 
 servers:
@@ -36,7 +36,8 @@ paths:
     post:
       tags: [Auth]
       summary: Log in
-      description: Authenticates a user and returns a bearer token.
+      description: >-
+        Authenticates a user, creates a server-side session and sets it in the `sid` cookie.
       operationId: login
       requestBody:
         required: true
@@ -48,16 +49,23 @@ paths:
               username: officer3
               password: s3cret
       responses:
-        '200':
-          description: Login successful
+        '201':
+          description: Login successful, session created
+          headers:
+            Set-Cookie:
+              description: Session cookie (`HttpOnly`, `SameSite=Lax`)
+              schema:
+                type: string
+                example: sid=3f9c1c0e...; Path=/; HttpOnly; SameSite=Lax
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponse'
+                $ref: '#/components/schemas/User'
               example:
-                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-                role: officer
-                counterId: 3
+                id: 7
+                username: officer3
+                role: OFFICER
+                counterNumber: 3
         '400':
           description: Missing or empty fields (`ValidationError`)
           content:
@@ -84,11 +92,10 @@ paths:
       tags: [Auth]
       summary: Log out
       description: >-
-        Invalidates the current token. Optional: with stateless tokens (JWT) the client
-        can simply discard the token.
+        Deletes the session on the server and clears the `sid` cookie.
       operationId: logout
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         '204':
           description: Logged out
@@ -163,11 +170,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               examples:
-                bodyMissing:
-                  summary: Body missing
-                  value:
-                    error: ValidationError
-                    message: Request body is required
                 bodyNotJson:
                   summary: Body is not valid JSON
                   value:
@@ -204,43 +206,73 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /tickets/{code}/served:
-    post:
+  /tickets/{code}:
+    patch:
       tags: [Tickets]
       summary: Close a ticket (called -> served)
       description: >-
-        Called by the officer when the customer has been served. The ticket moves from
-        `called` to `served` and the counter becomes available again. The ticket is looked
-        up by `code` among today's tickets. The code is in the path (and not just the
-        counter) so a delayed or duplicated request cannot close the next customer's ticket.
+        Called by the officer when the customer has been served. The only change allowed for now
+        is `status: served`: the ticket moves from `called` to `served` and the counter becomes
+        available again. The ticket is looked up by `code` among today's tickets. The code is in the
+        path (and not just the counter) so a delayed or duplicated request cannot close the next
+        customer's ticket.
       operationId: serveTicket
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       parameters:
         - $ref: '#/components/parameters/TicketCodePath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTicketRequest'
+            example:
+              status: served
       responses:
         '204':
           description: Ticket closed, the counter is free
         '400':
-          description: Invalid ticket code format (`ValidationError`)
+          description: Invalid ticket code or body (`ValidationError`)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-              example:
-                error: ValidationError
-                message: code must match P-001 format
+              examples:
+                codeInvalid:
+                  summary: Code with a wrong format
+                  value:
+                    error: ValidationError
+                    message: code must match P-001 format
+                statusMissing:
+                  summary: status missing
+                  value:
+                    error: ValidationError
+                    message: status is required
+                statusInvalid:
+                  summary: status is not `served`
+                  value:
+                    error: ValidationError
+                    message: status must be "served"
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          description: The user is not an officer, or the ticket was called by another counter
+          description: The user is not an officer, or the ticket was called by another counter (`ForbiddenError`)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-              example:
-                error: Forbidden
-                message: Ticket P-001 was not called by your counter
+              examples:
+                notOfficer:
+                  summary: The user is not an officer
+                  value:
+                    error: ForbiddenError
+                    message: Only an officer can do this
+                otherCounter:
+                  summary: The ticket was called by another counter
+                  value:
+                    error: ForbiddenError
+                    message: Ticket P-001 was not called by your counter
         '409':
           description: >-
             The ticket is not in state `called` (still `waiting` or already `served`)
@@ -264,7 +296,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /counters/{counterId}/next-ticket:
+  /counters/{counterNumber}/next-ticket:
     post:
       tags: [Counters]
       summary: Call the next customer
@@ -284,9 +316,9 @@ paths:
         never get the same ticket.
       operationId: callNextTicket
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       parameters:
-        - $ref: '#/components/parameters/CounterIdPath'
+        - $ref: '#/components/parameters/CounterNumberPath'
       responses:
         '200':
           description: A ticket has been called
@@ -299,14 +331,14 @@ paths:
         '204':
           description: All the queues of this counter are empty, nothing to call
         '400':
-          description: counterId is not a positive integer (`ValidationError`)
+          description: counterNumber is not a positive integer (`ValidationError`)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
                 error: ValidationError
-                message: counterId must be a positive integer
+                message: counterNumber must be a positive integer
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -316,7 +348,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                error: Forbidden
+                error: ForbiddenError
                 message: Not allowed to operate counter 3
         '409':
           description: The counter is still serving a ticket (`CounterBusyError`)
@@ -341,11 +373,11 @@ paths:
 
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: Token returned by `POST /sessions`
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sid
+      description: Session cookie set by `POST /sessions`
 
   parameters:
     TicketCodePath:
@@ -357,11 +389,11 @@ components:
         type: string
         pattern: '^[A-Z]+-\d{3}$'
         example: P-001
-    CounterIdPath:
-      name: counterId
+    CounterNumberPath:
+      name: counterNumber
       in: path
       required: true
-      description: Id of the counter
+      description: Number of the counter
       schema:
         type: integer
         minimum: 1
@@ -392,16 +424,18 @@ components:
           type: string
           minLength: 1
 
-    LoginResponse:
+    User:
       type: object
-      required: [token, role]
+      required: [id, username, role]
       properties:
-        token:
+        id:
+          type: integer
+        username:
           type: string
         role:
           type: string
-          enum: [officer]
-        counterId:
+          enum: [OFFICER]
+        counterNumber:
           type: integer
           description: Counter assigned to the officer.
 
@@ -429,6 +463,15 @@ components:
           minimum: 1
           example: 2
 
+    UpdateTicketRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [served]
+          description: The only change allowed for now.
+
     TicketCode:
       type: object
       required: [code]
@@ -441,13 +484,13 @@ components:
 
   responses:
     Unauthorized:
-      description: Missing, expired or invalid token (`Unauthorized`)
+      description: Missing or invalid session (`UnauthorizedError`)
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            error: Unauthorized
+            error: UnauthorizedError
             message: Authentication required
     InternalServerError:
       description: Unexpected error (`InternalServerError`)
