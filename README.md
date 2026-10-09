@@ -115,6 +115,26 @@ npm.cmd run db:seed
 
 On macOS and Linux, use `npm` instead of `npm.cmd`.
 
+## E2E tests
+
+The E2E tests use Playwright. They start the server and the client by themselves, on a separate test database, so your local one is never touched.
+
+The first time, install everything (from the repository root):
+
+```powershell
+cd server; npm.cmd install; cd ..
+cd client; npm.cmd install; cd ..
+cd e2e; npm.cmd install; npx playwright install chromium
+```
+
+Then, from the `e2e` directory:
+
+```powershell
+npm.cmd run e2e
+```
+
+Ports 3001 and 5173 must be free, so stop your own server and client first. To see a report of the last run, use `npx playwright show-report`.
+
 ## Testing
 
 Where a test is written depends on what it covers.
