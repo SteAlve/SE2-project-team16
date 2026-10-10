@@ -3,13 +3,13 @@
 -- Running it again is fine: anything that's already there is skipped.
 
 -- service_time is in minutes
-INSERT OR IGNORE INTO service (id, tag, prefix, service_time) VALUES
-  (1, 'Shipping', 'S', 10),
-  (2, 'Bill payment', 'P', 5),
-  (3, 'Accounts', 'A', 5),
-  (4, 'Registered mail pickup', 'R', 3),
-  (5, 'Money transfer', 'M', 8),
-  (6, 'Pensions', 'N', 12);
+INSERT OR IGNORE INTO service (id, tag, prefix, service_time, image) VALUES
+  (1, 'Shipping', 'S', 10, 'shipping.jpg'),
+  (2, 'Bill payment', 'P', 5, 'bill-payment.jpg'),
+  (3, 'Accounts', 'A', 5, 'accounts.jpg'),
+  (4, 'Registered mail pickup', 'R', 3, 'registered-mail-pickup.jpg'),
+  (5, 'Money transfer', 'M', 8, 'money-transfer.jpg'),
+  (6, 'Pensions', 'N', 12, 'pensions.jpg');
 
 INSERT OR IGNORE INTO counter (number) VALUES (1), (2), (3), (4), (5), (6);
 
