@@ -70,7 +70,7 @@ function SelectServicePage() {
                     {renderServices()}
                 </div>
 
-                <EstimatedTimeDisclaimerFooter />
+                {/*<EstimatedTimeDisclaimerFooter />} */}
             </div>
         </>
     );

@@ -98,7 +98,7 @@ function ShowTicketPage() {
                 <Button className="show-ticket-button" onClick={()=>{navigate('/select-service')}}>
                     Ok
                 </Button>
-                <EstimatedTimeDisclaimerFooter/>
+                {/*<EstimatedTimeDisclaimerFooter/>*/}
             </div>
         </>
     );
