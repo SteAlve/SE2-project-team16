@@ -49,18 +49,3 @@
     padding-top: 15px;
     padding-bottom: 15px;
 }
-
-.service-duration {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-
-    padding: 2px 7px;
-
-    background-color: var(--color-light-grey);
-    border-radius: 24px;
-
-    color: var(--color-text-opacity-60);
-    font-size: var(--font-size-sm);
-    font-weight: 400;
-}

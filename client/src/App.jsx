@@ -21,7 +21,7 @@
 
 import SelectServicePage from './pages/SelectServicePage/SelectServicePage'
 import ShowTicketPage from './pages/ShowTicketPage/ShowTicketPage'
-import { Routes, Route, BrowserRouter } from "react-router-dom"
+import { Routes, Route, BrowserRouter, Navigate } from "react-router-dom"
 
 function App() {
 
@@ -30,8 +30,12 @@ function App() {
     <>
       <BrowserRouter>
         <Routes>
+          {/* The kiosk opens on "/": send it to the first screen */}
+          <Route path="/" element={<Navigate to="/select-service" replace />} />
           <Route path="/select-service" element={<SelectServicePage />} />
           <Route path="/show-ticket" element={<ShowTicketPage />} />
+          {/* Any unknown path ends up on the first screen too */}
+          <Route path="*" element={<Navigate to="/select-service" replace />} />
         </Routes>
       </BrowserRouter>
     </>

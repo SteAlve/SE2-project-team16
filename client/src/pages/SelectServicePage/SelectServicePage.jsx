@@ -1,6 +1,5 @@
 import { Button, Container, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import EstimatedTimeDisclaimerFooter from "../../components/footers/estimated-time-disclaimer-footer/EstimatedTimeDisclaimerFooter";
 import ServiceGrid from "../../components/grids/ServiceGrid";
 import { useServices } from "../../hooks/useServices";
 import './select-service-page.css'
@@ -70,7 +69,9 @@ function SelectServicePage() {
                     {renderServices()}
                 </div>
 
-                {/*<EstimatedTimeDisclaimerFooter />} */}
+                {/* TODO (waiting time story): import EstimatedTimeDisclaimerFooter from
+                    "../../components/footers/estimated-time-disclaimer-footer/EstimatedTimeDisclaimerFooter"
+                    and render <EstimatedTimeDisclaimerFooter /> here. */}
             </div>
         </>
     );

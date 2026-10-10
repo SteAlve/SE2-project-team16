@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { Button, Container, Spinner } from "react-bootstrap";
 import { useLocation, useNavigate } from 'react-router-dom';
-import EstimatedTimeDisclaimerFooter from "../../components/footers/estimated-time-disclaimer-footer/EstimatedTimeDisclaimerFooter";
 import { useIssueTicket } from "../../hooks/useIssueTicket";
 import './show-ticket-page.css';
 
@@ -98,7 +97,9 @@ function ShowTicketPage() {
                 <Button className="show-ticket-button" onClick={()=>{navigate('/select-service')}}>
                     Ok
                 </Button>
-                {/*<EstimatedTimeDisclaimerFooter/>*/}
+                {/* TODO (waiting time story): import EstimatedTimeDisclaimerFooter from
+                    "../../components/footers/estimated-time-disclaimer-footer/EstimatedTimeDisclaimerFooter"
+                    and render <EstimatedTimeDisclaimerFooter /> here. */}
             </div>
         </>
     );
