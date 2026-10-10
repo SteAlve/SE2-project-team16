@@ -1,0 +1,80 @@
+# QA pipeline
+#
+# This workflow runs whenever the qa branch is updated.
+# It validates the project before it can be considered ready
+# for the production branch.
+
+name: QA
+
+on:
+  push:
+    branches:
+      - qa
+
+jobs:
+  qa:
+    # Run the QA checks on a temporary Ubuntu machine
+    # provided by GitHub Actions.
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Download the repository code.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install the Node.js version specified by the project.
+      # The cache covers the three parts of the project the tests need.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+          cache-dependency-path: |
+            server/package-lock.json
+            client/package-lock.json
+            e2e/package-lock.json
+
+      # Install the server dependencies.
+      - name: Install dependencies
+        working-directory: server
+        run: npm ci
+
+      # Check the code with ESLint.
+      - name: Run lint
+        working-directory: server
+        run: npm run lint
+
+      # Run the unit and integration tests (Vitest).
+      - name: Run unit and integration tests
+        working-directory: server
+        run: npm test
+
+      # The E2E tests start the client too, and run in a real browser with Playwright.
+      - name: Install client and E2E dependencies
+        run: |
+          npm ci --prefix client
+          npm ci --prefix e2e
+
+      # Download the browser Playwright uses, with the system libraries it needs.
+      - name: Install Playwright browser
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      # Start the server and the client on a fresh test database and run the E2E tests.
+      - name: Run E2E tests
+        working-directory: e2e
+        run: npm run e2e
+
+      # If an E2E test fails, keep the Playwright report so we can see what went wrong.
+      - name: Upload E2E report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 7
+
+      # TODO: Build the application once a production build is available.
+      # TODO: Generate the build artifact once the build process is implemented.
+      # TODO: Deploy the application to the QA environment once a deployment platform and strategy have been selected.

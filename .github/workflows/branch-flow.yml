@@ -1,3 +1,16 @@
+# This workflow enforces the project's branch flow:
+#
+#   fix/*, test/* ──> qa
+#   dev ────────────> qa ──> main
+#
+# It performs three checks:
+#
+# 1. Validates that Pull Requests follow the allowed branch flow.
+# 2. Ensures that a new dev -> qa batch can enter qa only after the previous batch has been promoted to main.
+# 3. Ensures that fixes made during QA are back-merged into dev before the next batch is promoted.
+#
+# This prevents untested code from reaching main, avoids mixing batches in qa, and prevents QA fixes from being lost.
+
 name: Branch Flow
 
 on:
