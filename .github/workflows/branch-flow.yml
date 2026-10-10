@@ -18,6 +18,7 @@ on:
     branches:
       - main
       - qa
+      - dev
 
 jobs:
   validate-branch-flow:
@@ -105,3 +106,40 @@ jobs:
           fi
 
           echo "dev contains everything that was made on qa."
+
+  # A branch that goes into dev must contain the current dev. If dev moved after the branch
+  # was cut, the work was never tried together with what others have merged since.
+  # The back-merges from qa and main are older than dev by design, so they are not checked.
+  # This check is required by the ruleset of dev, which cannot tell where a PR comes from, and
+  # a skipped required check is not reliably counted as passed. So the job always runs, and for
+  # a back-merge it just reports success without doing anything.
+  up-to-date-with-dev:
+    name: Branch is up to date with dev
+    if: github.base_ref == 'dev'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Back-merges are not checked
+        if: github.head_ref == 'qa' || github.head_ref == 'main'
+        run: echo "A back-merge is older than dev by design, so there is nothing to check."
+
+      - name: Checkout the branch with full history
+        if: github.head_ref != 'qa' && github.head_ref != 'main'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Check that the branch contains the current dev
+        if: github.head_ref != 'qa' && github.head_ref != 'main'
+        run: |
+          behind=$(git rev-list --count HEAD..origin/dev)
+
+          if [ "$behind" -ne 0 ]; then
+            echo "ERROR: this branch is $behind commit(s) behind dev."
+            echo "Bring dev into it ('Update branch' on the PR, or: git merge origin/dev) and push again."
+            git log --oneline --no-merges HEAD..origin/dev
+            exit 1
+          fi
+
+          echo "The branch contains the current dev."
