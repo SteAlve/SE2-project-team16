@@ -1,7 +1,7 @@
 import { all, get } from './db.js';
 
 const selectService = `
-  SELECT id, tag AS name, prefix
+  SELECT id, tag AS name, prefix, image
   FROM service`;
 
 export const findAll = () => all(`${selectService} ORDER BY name`);

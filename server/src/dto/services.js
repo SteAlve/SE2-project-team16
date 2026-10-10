@@ -15,4 +15,11 @@ export const parseCreateService = (body) => {
   return { tag, prefix, serviceTime };
 };
 
-export const toServiceDto = ({ id, name, prefix }) => ({ id, name, prefix });
+export const SERVICE_IMAGES_PATH = '/api/images/services';
+
+export const toServiceDto = ({ id, name, prefix, image }) => ({
+  id,
+  name,
+  prefix,
+  imageUrl: image ? `${SERVICE_IMAGES_PATH}/${image}` : null,
+});
