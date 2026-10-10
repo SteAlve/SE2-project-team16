@@ -31,6 +31,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: npm
+          cache-dependency-path: server/package-lock.json
 
       # Install the server dependencies.
       - name: Install dependencies
@@ -42,7 +43,10 @@ jobs:
         working-directory: server
         run: npm run lint
 
-      # TODO: Add unit tests once they are implemented.
-      # TODO: Add integration tests once they are implemented.
+      # Run the unit and integration tests (Vitest) one last time before deploying.
+      - name: Run unit and integration tests
+        working-directory: server
+        run: npm test
+
       # TODO: Add build step once a production build is available.
       # TODO: Add production deployment once a deployment platform and deployment strategy have been selected.

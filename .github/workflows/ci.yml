@@ -1,9 +1,9 @@
 # This workflow performs Continuous Integration checks
 # on Pull Requests targeting the dev branch.
 #
-# It installs the server dependencies and runs ESLint
+# It installs the server dependencies, runs ESLint
 # to verify that the proposed changes follow the project's
-# code quality rules.
+# code quality rules, and runs the server tests.
 
 name: Continuous Integration
 
@@ -36,7 +36,9 @@ jobs:
           node-version: 22
 
           # Enable npm dependency caching to speed up future workflow runs.
+          # There's no package-lock.json at the root, so point to the server's one.
           cache: npm
+          cache-dependency-path: server/package-lock.json
 
       # Install the project's dependencies using the package-lock.json file.
       # The package.json is located inside the server directory,
@@ -51,5 +53,9 @@ jobs:
         working-directory: server
         run: npm run lint
 
-      # TODO: Run unit tests once they are implemented.
+      # Run the server tests (Vitest): unit tests and the tests on a real SQLite database.
+      - name: Run tests
+        working-directory: server
+        run: npm test
+
       # TODO: Run the build once a production build is available.

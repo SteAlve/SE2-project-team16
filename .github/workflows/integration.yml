@@ -2,7 +2,7 @@
 #
 # It runs whenever the dev branch is updated and verifies
 # that the integrated version of the project passes the
-# available code quality checks.
+# code quality checks and the tests.
 
 name: Integration CI
 
@@ -28,6 +28,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: npm
+          cache-dependency-path: server/package-lock.json
 
       # Install the server dependencies.
       - name: Install dependencies
@@ -39,6 +40,10 @@ jobs:
         working-directory: server
         run: npm run lint
 
-      # TODO: Run unit tests once they are implemented.
-      # TODO: Run integration tests once they are implemented.
+      # Run the unit and integration tests. Vitest runs both in one go: the integration
+      # ones are the tests that work on a real SQLite database (dao, database, seed).
+      - name: Run unit and integration tests
+        working-directory: server
+        run: npm test
+
       # TODO: Build the application once a production build is available.
