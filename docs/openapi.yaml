@@ -110,7 +110,8 @@ paths:
       summary: List the services
       description: >-
         Returns the services a customer can choose from. If no service is configured yet,
-        an empty array is returned (this is not an error).
+        an empty array is returned (this is not an error). Each service carries the URL of
+        its image, or `null` if it has none (the client shows a fallback image).
       operationId: listServices
       responses:
         '200':
@@ -125,11 +126,41 @@ paths:
                 - id: 1
                   name: Shipping
                   prefix: S
+                  imageUrl: /api/images/services/shipping.jpg
                 - id: 2
                   name: Bill payment
                   prefix: P
+                  imageUrl: null
         '500':
           $ref: '#/components/responses/InternalServerError'
+
+  /images/services/{file}:
+    get:
+      tags: [Services]
+      summary: Get a service image
+      description: >-
+        Serves the image of a service as a static file. The file name is the one found at the
+        end of the `imageUrl` field of the service. A missing file gives a plain `404`
+        (not the JSON error body used by the other routes).
+      operationId: getServiceImage
+      parameters:
+        - name: file
+          in: path
+          required: true
+          description: File name of the image
+          schema:
+            type: string
+            example: shipping.jpg
+      responses:
+        '200':
+          description: The image
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: No image with this file name
 
   /tickets:
     post:
@@ -441,7 +472,7 @@ components:
 
     Service:
       type: object
-      required: [id, name, prefix]
+      required: [id, name, prefix, imageUrl]
       properties:
         id:
           type: integer
@@ -453,6 +484,11 @@ components:
           type: string
           description: Prefix of the ticket codes of this service. Unique across the office.
           example: P
+        imageUrl:
+          type: string
+          nullable: true
+          description: URL of the image of the service, or `null` if the service has none.
+          example: /api/images/services/bill-payment.jpg
 
     CreateTicketRequest:
       type: object
