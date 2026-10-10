@@ -95,6 +95,8 @@ The display board isn't part of this sprint, so for now we check the queue in th
 - **Then** they see "Unable to reach the server."
 - **And** a "Try again" button
 
+Stopping the real server would break the other tests, so the test makes the request fail instead.
+
 ### S10. The ticket page is opened without picking a service
 
 - **When** the customer goes straight to the ticket page
@@ -107,19 +109,30 @@ The display board isn't part of this sprint, so for now we check the queue in th
 - **When** the ticket is requested
 - **Then** they see "This service is no longer available."
 - **And** there's no "Try again" button
+- **And** no ticket is created
 
-Services can't be removed yet, so the test fakes the server's answer (422).
+The test removes the service from the database while the page is open.
 
-### S12. No more tickets today
+### S12. The numbering starts again after the last ticket of the day
 
 - **Given** 999 "Bill payment" tickets were already taken today
 - **When** the customer picks "Bill payment"
-- **Then** they see "No more tickets available today for this service."
-- **And** there's no "Try again" button
+- **Then** they still get a ticket, and the numbering starts again: `P-001`
 
-The test puts the 999 tickets straight into the database before starting.
+The professor's rule: the number is progressive and resets every day, and when it reaches the
+maximum it starts again, so the customer who would get `P-1000` gets `P-001`. The server still
+refuses ticket 1000 for now, so this test is on hold until that changes.
 
 ## To discuss with the team
 
-- The client has pages at `/select-service` and `/show-ticket`, but nothing at `/` yet. The tests
-  start from `/select-service` until we decide what the home page should be.
+- S12: the database doesn't allow the same number twice on the same day for a service, so after
+  `P-999` the new `P-001` would clash with the first `P-001` of the day. That rule needs to change too.
+
+## Results
+
+Last run: 11 of 12 scenarios pass. S12 is on hold until the server follows the new numbering rule.
+
+| Scenario | Result |
+|---|---|
+| S1 – S11 | ✅ pass |
+| S12 | ⏸ on hold (server change needed) |
