@@ -12,7 +12,9 @@ vi.mock('../../src/dao/db.js', () => ({
 }));
 
 vi.mock('../../src/dao/services.js', () => ({
-  findAll: () => apiState.services.map(({ id, name, prefix }) => ({ id, name, prefix })),
+  findAll: () => apiState.services.map(({ id, name, prefix, image = null }) => (
+    { id, name, prefix, image }
+  )),
   findById: (id) => apiState.services.find((service) => service.id === id),
 }));
 
@@ -37,16 +39,16 @@ describe('API app', () => {
     // Endpoint: GET /api/services. Returns the public DTOs for all configured services.
     it('returns the available services', async () => {
       apiState.services = [
-        { id: 1, name: 'Shipping', prefix: 'S' },
-        { id: 2, name: 'Payments', prefix: 'P' },
+        { id: 1, name: 'Shipping', prefix: 'S', image: 'shipping.jpg' },
+        { id: 2, name: 'Payments', prefix: 'P', image: null },
       ];
 
       const response = await request(app).get('/api/services');
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual([
-        { id: 1, name: 'Shipping', prefix: 'S' },
-        { id: 2, name: 'Payments', prefix: 'P' },
+        { id: 1, name: 'Shipping', prefix: 'S', imageUrl: '/api/images/services/shipping.jpg' },
+        { id: 2, name: 'Payments', prefix: 'P', imageUrl: null },
       ]);
     });
 
@@ -56,6 +58,30 @@ describe('API app', () => {
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual([]);
+    });
+  });
+
+  describe('GET /api/images/services/:file', () => {
+    // Endpoint: GET /api/images/services/<file>. Serves an existing service image.
+    it('serves an existing service image', async () => {
+      const response = await request(app).get('/api/images/services/shipping.jpg');
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toMatch(/^image\/jpeg/);
+    });
+
+    // Endpoint: GET /api/images/services/<file>. A missing file returns 404.
+    it('returns 404 for an image that does not exist', async () => {
+      const response = await request(app).get('/api/images/services/does-not-exist.jpg');
+
+      expect(response.status).toBe(404);
+    });
+
+    // Endpoint: GET /api/images/services/<file>. Paths outside the images folder are not served.
+    it('does not serve files outside the images folder', async () => {
+      const response = await request(app).get('/api/images/services/..%2F..%2Fsrc%2Fapp.js');
+
+      expect(response.status).not.toBe(200);
     });
   });
 

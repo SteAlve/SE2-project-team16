@@ -27,10 +27,10 @@ afterEach(() => {
   testState.db = null;
 });
 
-const seedService = ({ id, tag, prefix, serviceTime = 60 }) =>
+const seedService = ({ id, tag, prefix, serviceTime = 60, image = null }) =>
   testState.db.prepare(
-    'INSERT INTO service (id, tag, prefix, service_time) VALUES (?, ?, ?, ?)',
-  ).run(id, tag, prefix, serviceTime);
+    'INSERT INTO service (id, tag, prefix, service_time, image) VALUES (?, ?, ?, ?, ?)',
+  ).run(id, tag, prefix, serviceTime, image);
 
 describe('services DAO', () => {
   // Table: service. findAll() returns service DTO fields ordered by tag.
@@ -39,8 +39,19 @@ describe('services DAO', () => {
     seedService({ id: 2, tag: 'Payments', prefix: 'P' });
 
     expect(services.findAll()).toEqual([
-      { id: 2, name: 'Payments', prefix: 'P' },
-      { id: 1, name: 'Shipping', prefix: 'S' },
+      { id: 2, name: 'Payments', prefix: 'P', image: null },
+      { id: 1, name: 'Shipping', prefix: 'S', image: null },
+    ]);
+  });
+
+  // Table: service. findAll() returns the image file name when the service has one.
+  it('returns the image file name of each service', () => {
+    seedService({ id: 1, tag: 'Shipping', prefix: 'S', image: 'shipping.jpg' });
+    seedService({ id: 2, tag: 'Payments', prefix: 'P' });
+
+    expect(services.findAll()).toEqual([
+      { id: 2, name: 'Payments', prefix: 'P', image: null },
+      { id: 1, name: 'Shipping', prefix: 'S', image: 'shipping.jpg' },
     ]);
   });
 
@@ -57,8 +68,21 @@ describe('services DAO', () => {
       id: 5,
       name: 'Shipping',
       prefix: 'S',
+      image: null,
     });
     expect(services.findById(6)).toBeUndefined();
+  });
+
+  // Table: service. findById() includes the image file name when present.
+  it('finds a service by ID with its image', () => {
+    seedService({ id: 5, tag: 'Shipping', prefix: 'S', image: 'shipping.jpg' });
+
+    expect(services.findById(5)).toEqual({
+      id: 5,
+      name: 'Shipping',
+      prefix: 'S',
+      image: 'shipping.jpg',
+    });
   });
 
   // Table: service. list() is an alias of findAll() and preserves its ordering and DTO shape.
@@ -86,6 +110,7 @@ describe('services DAO', () => {
       tag: 'Shipping',
       prefix: 'S',
       service_time: 60,
+      image: null,
     });
   });
 });
