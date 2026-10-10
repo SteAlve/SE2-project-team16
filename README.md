@@ -90,6 +90,51 @@ dev → qa
 qa → main
 ```
 
+## Local database
+
+From the `server` directory, install dependencies and create the local SQLite database:
+
+```powershell
+npm.cmd install
+npm.cmd run db:create
+```
+
+This creates `server/office-queue.db`. Start the server with:
+
+```powershell
+node src/index.js
+```
+
+Run `npm.cmd run db:create` again only when setting up a new clone or after deleting the local database file.
+
+To add some sample services and counters, so you can try the app, run this after `db:create`:
+
+```powershell
+npm.cmd run db:seed
+```
+
+On macOS and Linux, use `npm` instead of `npm.cmd`.
+
+## E2E tests
+
+The E2E tests use Playwright. They start the server and the client by themselves, on a separate test database, so your local one is never touched.
+
+The first time, install everything (from the repository root):
+
+```powershell
+cd server; npm.cmd install; cd ..
+cd client; npm.cmd install; cd ..
+cd e2e; npm.cmd install; npx playwright install chromium
+```
+
+Then, from the `e2e` directory:
+
+```powershell
+npm.cmd run e2e
+```
+
+Ports 3001 and 5173 must be free, so stop your own server and client first. To see a report of the last run, use `npx playwright show-report`.
+
 ## Testing
 
 Where a test is written depends on what it covers.
