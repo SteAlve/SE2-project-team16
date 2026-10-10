@@ -1,7 +1,7 @@
 .service-card {
     width: 400px;
     height: 300px;
-    
+
     border-radius: 16px;
 
     border: none;
@@ -14,20 +14,21 @@
 
 }
 
+/* Same proportions as the image files (480x440), so nothing is cropped or stretched. */
 .service-image {
-    width: 160px;
-    height: 112px;
-
-    background-color: #9bb6f5;
-    border-radius: 6px;
+    width: 200px;
+    aspect-ratio: 480 / 440;
 
     display: flex;
     align-items: center;
     justify-content: center;
+}
 
-    color: white;
-    font-size: 16px;
-    font-weight: 700;
+.service-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
 }
 
 .service-card .card-body {

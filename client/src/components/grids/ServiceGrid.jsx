@@ -10,6 +10,7 @@ function ServiceGrid({ services, onSelect }) {
           <Col key={service.id} xs={12} sm={6} className="d-flex justify-content-center align-items-center">
             <ServiceCard
               name={service.name}
+              image={service.imageUrl}
               onClick={() => onSelect(service)}
             />
           </Col>

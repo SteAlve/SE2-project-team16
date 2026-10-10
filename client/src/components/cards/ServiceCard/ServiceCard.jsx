@@ -1,7 +1,13 @@
+import { useState } from "react";
 import Card from "react-bootstrap/Card";
+import notFoundImage from "../../../assets/image-not-found.jpg";
 import "./service-card.css";
 
 function ServiceCard({ name, image, onClick }) {
+  // Show the fallback when the service has no image or the image fails to load.
+  const [failed, setFailed] = useState(false);
+  const src = image && !failed ? image : notFoundImage;
+
   return (
     <Card
       className="service-card"
@@ -17,27 +23,15 @@ function ServiceCard({ name, image, onClick }) {
     >
       <Card.Body>
         <div className="service-image">
-          {image ? (
-            <img src={image} alt={name} />
-          ) : (
-            <span>Service Image</span>
-          )}
+          <img src={src} alt={name} onError={() => setFailed(true)} />
         </div>
+
         <Card.Title className="service-name">
           {name}
         </Card.Title>
-
       </Card.Body>
     </Card>
   );
 }
 
 export default ServiceCard;
-
-
-/*
-import { FaRegClock } from "react-icons/fa6";
-      <div className="service-duration">
-          <FaRegClock size={22} />
-          <span>{duration}</span>
-        </div>*/
