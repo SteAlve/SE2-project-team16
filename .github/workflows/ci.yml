@@ -1,0 +1,61 @@
+# This workflow performs Continuous Integration checks
+# on Pull Requests targeting the dev branch.
+#
+# It installs the server dependencies, runs ESLint
+# to verify that the proposed changes follow the project's
+# code quality rules, and runs the server tests.
+
+name: Continuous Integration
+
+on:
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  ci:
+
+    # Run the job on a temporary Ubuntu virtual machine
+    # provided by GitHub Actions.
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Download the repository code into the virtual machine.
+      # This allows the following steps to access and analyze the project.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install and configure Node.js for the CI environment.
+      # The project requires Node.js version 22 or newer.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+
+          # Use Node.js version 22.
+          node-version: 22
+
+          # Enable npm dependency caching to speed up future workflow runs.
+          # There's no package-lock.json at the root, so point to the server's one.
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      # Install the project's dependencies using the package-lock.json file.
+      # The package.json is located inside the server directory,
+      # so the command must be executed from there.
+      - name: Install dependencies
+        working-directory: server
+        run: npm ci
+
+      # Run ESLint to check the server code for errors
+      # and violations of the project's coding rules.
+      - name: Run lint
+        working-directory: server
+        run: npm run lint
+
+      # Run the server tests (Vitest): unit tests and the tests on a real SQLite database.
+      - name: Run tests
+        working-directory: server
+        run: npm test
+
+      # TODO: Run the build once a production build is available.

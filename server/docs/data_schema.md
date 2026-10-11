@@ -24,6 +24,7 @@
 | tag | TEXT | NOT NULL, UNIQUE |
 | prefix | TEXT | NOT NULL, UNIQUE, exactly one character; used in ticket codes such as `A-001` |
 | service_time | INTEGER | NOT NULL, greater than 0 |
+| image | TEXT | NULL; file name only (e.g. `shipping.jpg`), stored in `server/public/images/services/` |
 
 ## counter_service
 

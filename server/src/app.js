@@ -14,6 +14,8 @@
 
 // general imports
 import express from 'express';
+import path from 'node:path';
+import { SERVICE_IMAGES_PATH } from './dto/services.js';
 
 // clock: the only piece that uses Date, so that the rest of the system can be tested with a fake clock
 import { clock } from './clock.js';
@@ -49,7 +51,11 @@ const listServicesController = makeListServicesController({ listServices });
 // 4. routers
 export const app = express();
 app.use(express.json());
-app.use('/api', makeServicesRouter({ listServicesController }), 
+app.use(
+  SERVICE_IMAGES_PATH,
+  express.static(path.join(import.meta.dirname, '..', 'public', 'images', 'services')),
+);
+app.use('/api', makeServicesRouter({ listServicesController }),
                 makeTicketsRouter({ issueTicketController }));
 
 // 5. errors
