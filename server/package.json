@@ -10,6 +10,7 @@
     "db:create": "node database/create-db.js",
     "db:seed": "node database/seed-db.js",
     "lint": "eslint .",
+    "start": "npm run db:create && node src/index.js",
     "test": "vitest run"
   },
   "devDependencies": {
