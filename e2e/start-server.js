@@ -5,10 +5,9 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { mkdirSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { databaseDir, databaseFile } from './test-db.js';
 
 const serverDir = fileURLToPath(new URL('../server/', import.meta.url));
-const databaseDir = fileURLToPath(new URL('./database/', import.meta.url));
-const databaseFile = `${databaseDir}e2e.db`;
 
 mkdirSync(databaseDir, { recursive: true });
 for (const suffix of ['', '-shm', '-wal']) {
