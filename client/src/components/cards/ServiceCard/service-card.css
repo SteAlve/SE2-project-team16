@@ -1,0 +1,51 @@
+.service-card {
+    width: 400px;
+    height: 300px;
+
+    border-radius: 16px;
+
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    background-color: var(--color-card);
+
+    margin-top: 30px;
+    margin-bottom: 30px;
+
+}
+
+/* Same proportions as the image files (480x440), so nothing is cropped or stretched. */
+.service-image {
+    width: 200px;
+    aspect-ratio: 480 / 440;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.service-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.service-card .card-body {
+    padding: 8px;
+    text-align: center;
+
+    flex-direction: column;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.service-name {
+    font-size: var(--font-size-md);
+    font-weight: 700;
+    color: var(--color-text);
+    padding-top: 15px;
+    padding-bottom: 15px;
+}

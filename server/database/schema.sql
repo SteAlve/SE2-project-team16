@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS service (
   id INTEGER PRIMARY KEY,
   tag TEXT NOT NULL UNIQUE,
   prefix TEXT NOT NULL UNIQUE CHECK (length(prefix) = 1),
-  service_time INTEGER NOT NULL CHECK (service_time > 0)
+  service_time INTEGER NOT NULL CHECK (service_time > 0),
+  image TEXT
 );
 
 CREATE TABLE IF NOT EXISTS counter_service (

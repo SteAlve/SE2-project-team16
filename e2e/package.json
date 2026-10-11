@@ -1,0 +1,16 @@
+{
+  "name": "office-queue-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "better-sqlite3": "^13.0.3"
+  }
+}
