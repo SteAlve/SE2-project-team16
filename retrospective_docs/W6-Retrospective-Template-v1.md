@@ -17,11 +17,36 @@ sections:
 - Nr of hours planned vs spent (as a team)
 
 **Remember**  a story is done ONLY if it fits the Definition of Done:
- 
+
 - Unit Tests passing
+  - 197 tests pass successfully
+
 - Code review completed
+  - done by reviewing the pull request on github fro each implemented code
+
 - Code present on Git
+  - `feature` -> `dev` -> `qa` -> `main` for the demo
+    - feature may be closed after pull request
+
 - End-to-End tests performed
+  - Main flow
+    - S1. The customer sees the services
+    - S2. The customer gets a ticket
+    - S3. The customer goes back to the services
+  - Unique codes
+    - S4. Two customers of the same service get different codes
+    - S5. Each service counts on its own
+    - S6. Reloading the ticket page doesn't give a new ticket
+  - Queue update
+    - S7. A new ticket joins the end of its queue
+  - Error cases
+    - S8. No services set up yet
+    - S9. The server is down
+    - S10. The ticket page is opened without picking a service
+    - S11. The service doesn't exist anymore
+    - S12. The numbering starts again after the last ticket of the day
+
+  - all passed ecxept for the last one (S12), tiket P-999 -> error, not P-999 -> P-000
 
 > Please refine your DoD 
 
@@ -55,17 +80,17 @@ sections:
 ## QUALITY MEASURES 
 
 - Unit Testing:
-  - Total hours estimated
-  - Total hours spent
-  - Nr of automated unit test cases 
-  - Coverage
+  - Total hours estimated: 5h
+  - Total hours spent: 5h 55m
+  - Nr of automated unit test cases: 197
+  - Coverage: 97.81% Statements; 94.28% Branches; 100% Functions; 97.84% Lines
 - E2E testing:
-  - Total hours estimated
-  - Total hours spent
-  - Nr of test cases
+  - Total hours estimated: 8h 30m
+  - Total hours spent: 7h 45m
+  - Nr of test cases: 14
 - Code review 
-  - Total hours estimated 
-  - Total hours spent  
+  - Total hours estimated: 0
+  - Total hours spent: Not tracked
 
 
 ## ASSESSMENT
