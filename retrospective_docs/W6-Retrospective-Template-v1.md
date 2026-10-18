@@ -1,4 +1,4 @@
-TEMPLATE FOR RETROSPECTIVE (Team ##)
+SPRINT RETROSPECTIVE - Team 16
 =====================================
 
 The retrospective should include _at least_ the following
@@ -12,7 +12,7 @@ sections:
 
 ### Macro statistics
 
-- Number of stories committed vs done: **2 committed / 1 done**
+- Number of stories committed vs done: **2 committed / 0 done**
 - Total points committed vs done: **9 committed / 8 done**
 - Nr of hours planned vs spent (as a team): **55h 00m planned / 60h 07m spent**
 
@@ -22,7 +22,7 @@ sections:
   - 197 tests pass successfully
 
 - Code review completed
-  - done by reviewing the pull request on github fro each implemented code
+  - done by reviewing the pull request on github for each implemented code
 
 - Code present on Git
   - `feature` -> `dev` -> `qa` -> `main` for the demo
@@ -46,9 +46,25 @@ sections:
     - S11. The service doesn't exist anymore
     - S12. The numbering starts again after the last ticket of the day
 
-  - all passed ecxept for the last one (S12), tiket P-999 -> error, not P-999 -> P-000
+  - all passed except for the last one (S12), ticket P-999 -> error instead of wrapping from P-999 to P-000
 
-> Please refine your DoD 
+#### Refined Definition of Done (from next sprint)
+
+Based on the Agile Manifesto principles: *"Working software is the primary measure of progress"* and *"Continuous attention to technical excellence and good design enhances agility"*.
+
+A story is done only when **all** of the following are true:
+
+- **Working software**
+  - All acceptance criteria of the story are met.
+  - **All** E2E scenarios of the story pass (no exceptions, edge cases included). A failing scenario means the story is not done.
+- **Technical excellence**
+  - Unit and integration tests are written for the new code and all tests pass in CI.
+- **Team review**
+  - The PR is reviewed and approved by at least one other team member before merging.
+- **Integrated and demo-ready**
+  - The code is merged through `feature` -> `dev` -> `qa` -> `main` and the branch is up to date with `dev` before the PR.
+  - The story runs on `main` and can be shown to the Product Owner in the demo.
+
 
 ### Detailed statistics
 
@@ -59,8 +75,6 @@ sections:
 | _#2_ Next customer (OQM-4) | 2 |   1    | 2h 00m  | 3h 45m  |
 | **Total**               | **30** | **9** | **55h 00m** | **60h 07m** |
    
-
-> place technical tasks corresponding to story `#0` and leave out story points (not applicable in this case)
 
 - Hours per task average, standard deviation (estimate and actual)
 
@@ -77,7 +91,7 @@ sections:
     
 - Absolute relative task estimation error: sum( abs( spent-task-i / estimation-task-i - 1))/n
 
-    $$\frac{1}{n}\sum_i^n \left| \frac{spent_{task_i}}{estimation_task_i}-1 \right| $$
+    $$\frac{1}{n}\sum_i^n \left| \frac{spent_{task_i}}{estimation_{task_i}} - 1 \right|$$
 
     $$\frac{1}{30}\sum_{i=1}^{30} \left| \frac{spent_{task_i}}{estimation_{task_i}}-1 \right| \approx 0.399 \; (39.9\%)$$
 
@@ -92,7 +106,7 @@ sections:
 - E2E testing:
   - Total hours estimated: 8h 30m
   - Total hours spent: 7h 45m
-  - Nr of test cases: 14
+  - Nr of test cases: 12
 - Code review 
   - Total hours estimated: 0
   - Total hours spent: Not tracked
@@ -116,7 +130,7 @@ sections:
   - This was our first sprint, so there were no previous goals.
   
 - Which ones you were not able to achieve? Why?
-  - We didn't finish both stories: only story 1 (Get ticket) was completed. We split our effort across two stories, and some tasks were blocked waiting on others.
+  - We didn't finish either story: only story 1 (Get ticket) was presented but was not done by definition (it didn't pass all 12 E2E tests). We split our effort across two stories, and some tasks were blocked waiting on others.
 
 - Improvement goals for the next sprint and how to achieve them (technical tasks, team coordination, etc.)
   1. Plan the sprint better, with clear tasks, no duplicates and no bottlenecks:
@@ -129,7 +143,6 @@ sections:
      - Make small sub-teams for backend, frontend and database.
      - While one person implements, another reviews and another tests, so a story moves forward without waiting.
 
-> Propose one or two
 
 - One thing you are proud of as a Team!!
   - Our organization was superb: it let us deliver story 1 (Get ticket) end to end (frontend, API, database and tests, all running automatically in CI) and merge it into `main`.
