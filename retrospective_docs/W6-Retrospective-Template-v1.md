@@ -12,7 +12,7 @@ sections:
 
 ### Macro statistics
 
-- Number of stories committed vs done: **2 committed / 0 done**
+- Number of stories committed vs done: **2 committed / 1 done**
 - Total points committed vs done: **9 committed / 8 done**
 - Nr of hours planned vs spent (as a team): **55h 00m planned / 60h 07m spent**
 
@@ -46,7 +46,6 @@ sections:
     - S11. The service doesn't exist anymore
     - S12. The numbering starts again after the last ticket of the day
 
-  - all passed except for the last one (S12), ticket P-999 -> error instead of wrapping from P-999 to P-000
 
 #### Refined Definition of Done (from next sprint)
 
