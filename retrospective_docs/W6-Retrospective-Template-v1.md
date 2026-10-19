@@ -129,7 +129,7 @@ A story is done only when **all** of the following are true:
   - This was our first sprint, so there were no previous goals.
   
 - Which ones you were not able to achieve? Why?
-  - We didn't finish either story: only story 1 (Get ticket) was presented but was not done by definition (it didn't pass all 12 E2E tests). We split our effort across two stories, and some tasks were blocked waiting on others.
+  - We didn't finish the second story: only story 1 (Get ticket) was finished. We split our effort across two stories, and some tasks were blocked waiting on others.
 
 - Improvement goals for the next sprint and how to achieve them (technical tasks, team coordination, etc.)
   1. Plan the sprint better, with clear tasks, no duplicates and no bottlenecks:
